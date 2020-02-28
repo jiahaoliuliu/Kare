@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Kare</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="damages_fragment_description">Please identify the unreported damaged area</string>
+    <string name="comment_title">Commnet:</string>
+    <string name="next_button">Next</string>
 </resources>

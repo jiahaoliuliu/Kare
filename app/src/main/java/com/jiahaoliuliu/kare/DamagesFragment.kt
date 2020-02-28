@@ -12,6 +12,9 @@ import android.view.ViewGroup
  * create an instance of this fragment.
  */
 class DamagesFragment : Fragment() {
+    companion object {
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -20,6 +23,4 @@ class DamagesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_damages, container, false)
     }
 
-    companion object {
-    }
 }
