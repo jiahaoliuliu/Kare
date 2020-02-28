@@ -8,15 +8,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
 import com.jiahaoliuliu.kare.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -29,7 +26,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
-        private const val DEFAULT_ZOOM = 20
+        private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
+        private const val DEFAULT_ZOOM = 15F
         private const val TAG = "KARE"
     }
 
@@ -41,21 +39,18 @@ class MainActivity : AppCompatActivity() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         supportMapFragment.getMapAsync {
             googleMap = it
-
             // Turn on the my location layer and the related control on thee map
             updateLocationUI()
-
             // Get the current location of the device and set the position on thee map
             getDeviceLocation();
         }
-
-        getLocationPermission()
     }
 
     private fun getLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 applicationContext, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true
+            updateLocationUI()
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                 PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
@@ -72,11 +67,11 @@ class MainActivity : AppCompatActivity() {
                 // If request is cancelled, the result arrays are empty
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true
+                    updateLocationUI()
+                    getDeviceLocation()
                 }
             }
         }
-
-        updateLocationUI()
     }
 
     private fun updateLocationUI() {
@@ -103,33 +98,23 @@ class MainActivity : AppCompatActivity() {
          * cases when a location is not available.
          */
         googleMap?.let {
-        if (locationPermissionGranted) {
-            val locationResult: Task<*> =
-                fusedLocationProviderClient.lastLocation
-            locationResult.addOnCompleteListener(
-                this, object : OnCompleteListener<TResult?> {
-                    fun onComplete(task: Task<*>) {
-                        if (task.isSuccessful) { // Set the map's camera position to the current location of the device.
-                            lastKnowLocation = task.result
-                            it.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(
-                                        lastKnowLocation.getLatitude(),
-                                        lastKnowLocation.getLongitude()
-                                    ), DEFAULT_ZOOM
-                                )
-                            )
-                        } else {
-                            Log.d(TAG,"Current location is null. Using defaults.")
-                            Log.e(TAG,"Exception: %s",task.exception)
-                            it.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM))
-                            it.uiSettings.isMyLocationButtonEnabled = false
-                        }
-                    }
-                })
-        } else {
-
-        }
+            if (!locationPermissionGranted) {
+                return
+            }
+            val locationResult = fusedLocationProviderClient.lastLocation
+            locationResult.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    lastKnowLocation = task.result
+                    it.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        LatLng(lastKnowLocation!!.latitude, lastKnowLocation!!.longitude), DEFAULT_ZOOM)
+                    )
+                } else {
+                    Log.d(TAG, "Current location is null. Using defaults.");
+                    Log.e(TAG, "Exception: %s", task.exception);
+                    it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
+                    it.uiSettings.isMyLocationButtonEnabled = false
+                }
+            }
         }
     }
 }
