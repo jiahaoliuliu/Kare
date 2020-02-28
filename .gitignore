@@ -73,3 +73,6 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# App specific
+app/src/main/res/values/secret.xml
