@@ -13,7 +13,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.kare.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -35,7 +37,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
-        val supportMapFragment = supportFragmentManager.findFragmentById(R.id.maps) as SupportMapFragment
+
+        val supportMapFragment = SupportMapFragment.newInstance()
+        supportFragmentManager.beginTransaction().add(R.id.container, supportMapFragment).commit()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         supportMapFragment.getMapAsync {
             googleMap = it
@@ -64,22 +68,7 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     onLocationPermissionGuaranteed()
                 } else {
-                    googleMap?.let {googleMapNotNull ->
-                        lastKnownLocation?.let { lastKnownLocationNotNull ->
-                            googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                LatLng(lastKnownLocationNotNull.latitude, lastKnownLocationNotNull.longitude),
-                                DEFAULT_ZOOM))
-                        } ?: run {
-                            // if the permission is not guaranteed, then use the default location
-                            googleMapNotNull.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    DEFAULT_LOCATION,
-                                    DEFAULT_ZOOM
-                                )
-                            )
-                        }
-                        googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
-                    }
+                    onLocationPermissionDenegated()
                 }
             }
         }
@@ -91,6 +80,25 @@ class MainActivity : AppCompatActivity() {
         updateLocationUI()
         // Get the current location of the device and set the position on thee map
         getDeviceLocation();
+    }
+
+    private fun onLocationPermissionDenegated() {
+        googleMap?.let {googleMapNotNull ->
+            lastKnownLocation?.let { lastKnownLocationNotNull ->
+                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    LatLng(lastKnownLocationNotNull.latitude, lastKnownLocationNotNull.longitude),
+                    DEFAULT_ZOOM))
+            } ?: run {
+                // if the permission is not guaranteed, then use the default location
+                googleMapNotNull.moveCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                        DEFAULT_LOCATION,
+                        DEFAULT_ZOOM
+                    )
+                )
+            }
+            googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
+        }
     }
 
     private fun updateLocationUI() {
@@ -113,9 +121,16 @@ class MainActivity : AppCompatActivity() {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     lastKnownLocation = task.result
-                    it.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude), DEFAULT_ZOOM)
-                    )
+                    val lastKnownLocationLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+                    it.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocationLatLng, DEFAULT_ZOOM))
+
+                    val markerOptions = MarkerOptions()
+                    markerOptions.position(lastKnownLocationLatLng)
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    it.addMarker(markerOptions)
+                    it.setOnMarkerClickListener {
+                        openDamagedFragment()
+                    }
                 } else {
                     Log.d(TAG, "Current location is null. Using defaults.");
                     Log.e(TAG, "Exception: %s", task.exception);
@@ -124,5 +139,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun openDamagedFragment():Boolean {
+        val damagesFragment = DamagesFragment()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.container, damagesFragment)
+            .addToBackStack("DamagesFragment")
+            .commit()
+        return true
     }
 }
