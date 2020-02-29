@@ -6,9 +6,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -42,8 +45,28 @@ class DamagesFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         binding.frontView.setOnClickListener{ getCameraPermission(REQUEST_ID_FRONT_VIEW)}
         binding.backView.setOnClickListener{ getCameraPermission(REQUEST_ID_BACK_VIEW)}
-        binding.leftView.setOnClickListener{getCameraPermission(REQUEST_ID_LEFT_VIEW)}
-        binding.rightView.setOnClickListener{getCameraPermission(REQUEST_ID_RIGHT_VIEW)}
+        binding.leftView.setOnClickListener{ getCameraPermission(REQUEST_ID_LEFT_VIEW)}
+        binding.rightView.setOnClickListener{ getCameraPermission(REQUEST_ID_RIGHT_VIEW)}
+        binding.nextButton.isEnabled = false
+        binding.comment.addTextChangedListener(object:TextWatcher {
+            override fun afterTextChanged(editable: Editable?) {
+                editable?.let {
+                    binding.nextButton.isEnabled = it.isNotEmpty()
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Do nothing
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Do nothing
+            }
+        })
+
+        binding.nextButton.setOnClickListener{
+            Toast.makeText(activity!!, "You are good to go", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun getCameraPermission(requestId: Int) {
