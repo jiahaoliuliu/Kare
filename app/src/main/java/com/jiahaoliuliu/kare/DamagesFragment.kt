@@ -6,12 +6,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import com.jiahaoliuliu.kare.databinding.FragmentDamagesBinding
 
 /**
@@ -23,6 +23,9 @@ class DamagesFragment : Fragment() {
 
     companion object {
         private const val REQUEST_ID_FRONT_VIEW = 10000
+        private const val REQUEST_ID_BACK_VIEW = 10001
+        private const val REQUEST_ID_LEFT_VIEW = 10002
+        private const val REQUEST_ID_RIGHT_VIEW = 10003
     }
 
     private lateinit var binding: FragmentDamagesBinding
@@ -37,9 +40,10 @@ class DamagesFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        binding.frontView.setOnClickListener {
-            getCameraPermission(REQUEST_ID_FRONT_VIEW)
-        }
+        binding.frontView.setOnClickListener{ getCameraPermission(REQUEST_ID_FRONT_VIEW)}
+        binding.backView.setOnClickListener{ getCameraPermission(REQUEST_ID_BACK_VIEW)}
+        binding.leftView.setOnClickListener{getCameraPermission(REQUEST_ID_LEFT_VIEW)}
+        binding.rightView.setOnClickListener{getCameraPermission(REQUEST_ID_RIGHT_VIEW)}
     }
 
     private fun getCameraPermission(requestId: Int) {
@@ -77,6 +81,9 @@ class DamagesFragment : Fragment() {
             val imageBitmap = data.extras?.get("data") as Bitmap
             when(requestCode) {
                 REQUEST_ID_FRONT_VIEW -> binding.frontView.setImageBitmap(imageBitmap)
+                REQUEST_ID_BACK_VIEW -> binding.backView.setImageBitmap(imageBitmap)
+                REQUEST_ID_LEFT_VIEW -> binding.leftView.setImageBitmap(imageBitmap)
+                REQUEST_ID_RIGHT_VIEW -> binding.rightView.setImageBitmap(imageBitmap)
             }
         }
     }
