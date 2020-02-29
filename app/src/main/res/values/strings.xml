@@ -2,6 +2,6 @@
     <string name="app_name">Kare</string>
 
     <string name="damages_fragment_description">Please identify the unreported damaged area</string>
-    <string name="comment_title">Commnet:</string>
+    <string name="comment_title">Comment:</string>
     <string name="next_button">Next</string>
 </resources>
